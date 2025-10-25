@@ -1,7 +1,22 @@
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/lib/supabaseClient";
+import { cn } from "@/lib/utils";
 import { showError, showSuccess } from "@/utils/toast";
 import {
   BadgeCheck,
@@ -14,17 +29,11 @@ import {
   Package,
   Receipt,
   ShoppingCart,
+  User,
   Users,
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { Notifications } from "./Notifications";
 
 const navItems = [
@@ -86,23 +95,8 @@ export const AppLayout = () => {
           <p className="text-xl font-bold text-foreground">Oficina Pro</p>
         </div>
 
-        <SidebarContent />
-
-        <div className="mt-auto space-y-3 pt-6">
-          <div className="rounded-lg border border-border/60 bg-background/50 p-3">
-            <p className="text-xs text-muted-foreground">Usuário logado</p>
-            <p className="truncate text-sm font-medium text-foreground">
-              {user?.email ?? "Conta"}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            className="w-full justify-start gap-2"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-4 w-4" />
-            Sair
-          </Button>
+        <div className="flex-1">
+          <SidebarContent />
         </div>
       </aside>
 
@@ -133,23 +127,39 @@ export const AppLayout = () => {
           </div>
           <div className="flex items-center gap-4">
             <Notifications />
-            <div className="h-8 w-px bg-border" />
-            <div className="flex items-center gap-3">
-              <div className="hidden text-right lg:block">
-                <p className="text-sm font-medium text-foreground">
-                  {user?.email?.split("@")[0] ?? "Usuário"}
-                </p>
-                <p className="text-xs text-muted-foreground">Admin</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                onClick={handleSignOut}
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-3 rounded-full p-1"
+                >
+                  <div className="hidden text-right lg:block">
+                    <p className="text-sm font-medium text-foreground">
+                      {user?.email?.split("@")[0] ?? "Usuário"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Admin</p>
+                  </div>
+                  <User className="h-8 w-8 rounded-full border border-border/60 p-1.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user?.email?.split("@")[0] ?? "Usuário"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
