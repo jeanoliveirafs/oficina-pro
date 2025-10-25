@@ -8,7 +8,6 @@ import {
   BarChart2,
   Cog,
   DollarSign,
-  FileText,
   Home,
   LogOut,
   Menu,
@@ -26,6 +25,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Notifications } from "./Notifications";
 
 const navItems = [
   { label: "Dashboard", icon: Home, to: "/" },
@@ -159,14 +159,17 @@ export const AppLayout = () => {
               </h1>
             </div>
           </div>
-          <div className="hidden items-center gap-3 lg:flex">
-            <div className="rounded-md border bg-slate-50 px-3 py-2 text-sm">
-              {user?.email ?? "Conta"}
+          <div className="flex items-center gap-2">
+            <Notifications />
+            <div className="hidden items-center gap-3 lg:flex">
+              <div className="rounded-md border bg-slate-50 px-3 py-2 text-sm">
+                {user?.email ?? "Conta"}
+              </div>
+              <Button variant="outline" className="gap-2" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4" />
+                Sair
+              </Button>
             </div>
-            <Button variant="outline" className="gap-2" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-              Sair
-            </Button>
           </div>
         </header>
 

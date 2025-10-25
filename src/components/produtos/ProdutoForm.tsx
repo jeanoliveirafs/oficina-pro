@@ -31,6 +31,7 @@ const produtoSchema = z.object({
   preco_custo: z.coerce.number().min(0, "O preço de custo deve ser positivo."),
   preco_venda: z.coerce.number().min(0, "O preço de venda deve ser positivo."),
   estoque_atual: z.coerce.number().int("O estoque deve ser um número inteiro."),
+  estoque_minimo: z.coerce.number().int("O estoque mínimo deve ser um número inteiro.").min(0),
   categoria_id: z.string().nullable(),
 });
 
@@ -63,6 +64,7 @@ export const ProdutoForm = ({
       preco_custo: produtoInicial?.preco_custo ?? 0,
       preco_venda: produtoInicial?.preco_venda ?? 0,
       estoque_atual: produtoInicial?.estoque_atual ?? 0,
+      estoque_minimo: produtoInicial?.estoque_minimo ?? 0,
       categoria_id: produtoInicial?.categoria_id ?? null,
     },
   });
@@ -174,7 +176,7 @@ export const ProdutoForm = ({
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
             name="preco_custo"
@@ -201,6 +203,8 @@ export const ProdutoForm = ({
               </FormItem>
             )}
           />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
             name="estoque_atual"
@@ -209,6 +213,19 @@ export const ProdutoForm = ({
                 <FormLabel>Estoque Atual</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="estoque_minimo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estoque Mínimo</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="Ex: 5" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
