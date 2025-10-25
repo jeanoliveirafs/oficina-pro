@@ -46,9 +46,14 @@ interface Categoria {
 interface DespesaFormProps {
   despesaInicial?: any;
   onFinished: () => void;
+  defaultStatus?: string;
 }
 
-export const DespesaForm = ({ despesaInicial, onFinished }: DespesaFormProps) => {
+export const DespesaForm = ({
+  despesaInicial,
+  onFinished,
+  defaultStatus,
+}: DespesaFormProps) => {
   const queryClient = useQueryClient();
   const isEditMode = !!despesaInicial;
   const { data: oficinaId, isLoading: isLoadingOficinaId } = useOficinaId();
@@ -60,7 +65,7 @@ export const DespesaForm = ({ despesaInicial, onFinished }: DespesaFormProps) =>
       valor: despesaInicial?.valor ?? 0,
       data: despesaInicial?.data ? new Date(despesaInicial.data) : new Date(),
       categoria_id: despesaInicial?.categoria_id ?? null,
-      status: despesaInicial?.status ?? "pago",
+      status: despesaInicial?.status ?? defaultStatus ?? "pago",
     },
   });
 
@@ -213,7 +218,10 @@ export const DespesaForm = ({ despesaInicial, onFinished }: DespesaFormProps) =>
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione" />

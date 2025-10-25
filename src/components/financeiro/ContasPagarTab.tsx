@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Badge } from "../ui/badge";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, PlusCircle } from "lucide-react";
 import { showError, showSuccess } from "@/utils/toast";
+import { useState } from "react";
+import { DespesaDialog } from "./DespesaDialog";
 
 interface Conta {
   id: string;
@@ -26,6 +28,8 @@ interface Conta {
 
 export const ContasPagarTab = () => {
   const queryClient = useQueryClient();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   const {
     data: contas,
     isLoading,
@@ -59,71 +63,98 @@ export const ContasPagarTab = () => {
     }
   };
 
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
   if (error) {
     return <div className="text-red-500">Erro: {error.message}</div>;
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Descrição</TableHead>
-            <TableHead>Vencimento</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Valor</TableHead>
-            <TableHead className="w-[150px]">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading
-            ? Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell colSpan={5}>
-                    <Skeleton className="h-5 w-full" />
-                  </TableCell>
-                </TableRow>
-              ))
-            : contas && contas.length > 0
-              ? contas.map((conta) => (
-                  <TableRow key={conta.id}>
-                    <TableCell className="font-medium">{conta.descricao}</TableCell>
-                    <TableCell>{format(new Date(conta.data), "dd/MM/yyyy")}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={conta.status === "atrasado" ? "destructive" : "secondary"}
-                      >
-                        {conta.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {conta.valor.toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2"
-                        onClick={() => handleMarkAsPaid(conta.id)}
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                        Marcar como Pago
-                      </Button>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button className="gap-2" onClick={() => setDialogOpen(true)}>
+          <PlusCircle className="h-4 w-4" />
+          Nova Conta
+        </Button>
+      </div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Descrição</TableHead>
+              <TableHead>Vencimento</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Valor</TableHead>
+              <TableHead className="w-[150px]">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell colSpan={5}>
+                      <Skeleton className="h-5 w-full" />
                     </TableCell>
                   </TableRow>
                 ))
-              : (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    Nenhuma conta pendente.
-                  </TableCell>
-                </TableRow>
-              )}
-        </TableBody>
-      </Table>
+              : contas && contas.length > 0
+                ? contas.map((conta) => (
+                    <TableRow key={conta.id}>
+                      <TableCell className="font-medium">
+                        {conta.descricao}
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(conta.data), "dd/MM/yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            conta.status === "atrasado"
+                              ? "destructive"
+                              : "secondary"
+                          }
+                        >
+                          {conta.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {conta.valor.toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => handleMarkAsPaid(conta.id)}
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          Marcar como Pago
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      Nenhuma conta pendente.
+                    </TableCell>
+                  </TableRow>
+                )}
+          </TableBody>
+        </Table>
+      </div>
+      <DespesaDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        despesaId={null}
+        onFinished={handleDialogClose}
+        defaultStatus="pendente"
+      />
     </div>
   );
 };
