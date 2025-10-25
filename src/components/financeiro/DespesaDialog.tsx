@@ -16,6 +16,8 @@ interface DespesaDialogProps {
   despesaId: string | null;
   onFinished: () => void;
   defaultStatus?: string;
+  title?: string;
+  description?: string;
 }
 
 export const DespesaDialog = ({
@@ -24,6 +26,8 @@ export const DespesaDialog = ({
   despesaId,
   onFinished,
   defaultStatus,
+  title,
+  description,
 }: DespesaDialogProps) => {
   const isEditMode = !!despesaId;
 
@@ -42,16 +46,19 @@ export const DespesaDialog = ({
     enabled: isEditMode,
   });
 
+  const dialogTitle = title ?? (isEditMode ? "Editar Despesa" : "Nova Despesa");
+  const dialogDescription =
+    description ??
+    (isEditMode
+      ? "Atualize as informações deste lançamento."
+      : "Preencha os dados para registrar uma nova saída financeira.");
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Editar Despesa" : "Nova Despesa"}
-          </DialogTitle>
-          <DialogDescription>
-            Preencha os dados para registrar uma nova saída financeira.
-          </DialogDescription>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
         {isEditMode && isLoading ? (
           <div className="space-y-4 py-4">

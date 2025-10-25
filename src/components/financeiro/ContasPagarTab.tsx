@@ -154,6 +154,8 @@ export const ContasPagarTab = () => {
         despesaId={null}
         onFinished={handleDialogClose}
         defaultStatus="pendente"
+        title="Nova Conta a Pagar"
+        description="Preencha os dados para registrar um compromisso financeiro futuro."
       />
     </div>
   );
