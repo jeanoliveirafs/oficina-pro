@@ -16,7 +16,7 @@ interface DeleteCategoriaAlertProps {
   categoria: { id: string; nome: string } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  tableName: "categorias_receita" | "categorias_despesa";
+  tableName: "categorias_receita" | "categorias_despesa" | "categorias_produto";
   queryKey: string;
 }
 

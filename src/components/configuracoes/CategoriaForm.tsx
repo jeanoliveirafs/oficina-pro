@@ -25,7 +25,7 @@ type CategoriaFormValues = z.infer<typeof categoriaSchema>;
 interface CategoriaFormProps {
   categoriaInicial?: any;
   onFinished: () => void;
-  tableName: "categorias_receita" | "categorias_despesa";
+  tableName: "categorias_receita" | "categorias_despesa" | "categorias_produto";
   queryKey: string;
 }
 

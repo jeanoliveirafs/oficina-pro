@@ -63,18 +63,26 @@ const Configuracoes = () => {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base font-semibold">
-              Categorias Financeiras
+              Categorias
             </CardTitle>
             <CardDescription>
-              Organize suas entradas e saídas para relatórios mais precisos.
+              Organize seus produtos e finanças para relatórios mais precisos.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="receitas">
-              <TabsList className="grid w-full grid-cols-2">
+            <Tabs defaultValue="produtos">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="produtos">Produtos</TabsTrigger>
                 <TabsTrigger value="receitas">Receitas</TabsTrigger>
                 <TabsTrigger value="despesas">Despesas</TabsTrigger>
               </TabsList>
+              <TabsContent value="produtos" className="mt-4">
+                <GerenciadorCategorias
+                  tableName="categorias_produto"
+                  queryKey="categorias_produto"
+                  title="Categorias de Produto"
+                />
+              </TabsContent>
               <TabsContent value="receitas" className="mt-4">
                 <GerenciadorCategorias
                   tableName="categorias_receita"

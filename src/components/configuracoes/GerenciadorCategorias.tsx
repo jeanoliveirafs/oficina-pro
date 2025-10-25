@@ -19,7 +19,7 @@ interface Categoria {
 }
 
 interface GerenciadorCategoriasProps {
-  tableName: "categorias_receita" | "categorias_despesa";
+  tableName: "categorias_receita" | "categorias_despesa" | "categorias_produto";
   queryKey: string;
   title: string;
 }

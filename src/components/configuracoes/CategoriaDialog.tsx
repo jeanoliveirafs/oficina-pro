@@ -14,7 +14,7 @@ interface CategoriaDialogProps {
   onOpenChange: (open: boolean) => void;
   categoriaId: string | null;
   onFinished: () => void;
-  tableName: "categorias_receita" | "categorias_despesa";
+  tableName: "categorias_receita" | "categorias_despesa" | "categorias_produto";
   queryKey: string;
 }
 
