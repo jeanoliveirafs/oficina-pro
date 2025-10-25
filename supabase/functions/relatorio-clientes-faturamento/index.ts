@@ -9,16 +9,21 @@ const corsHeaders = {
 async function getOficinaId(supabase: SupabaseClient): Promise<string> {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    if (!user) throw new Error("User not authenticated");
+    if (!user || !user.email) throw new Error("User not authenticated or email is missing");
 
     const { data: usuario, error: usuarioError } = await supabase
         .from('usuarios')
         .select('oficina_id')
-        .eq('id', user.id)
+        .eq('email', user.email)
         .single();
 
-    if (usuarioError) throw new Error(`Could not fetch user profile: ${usuarioError.message}`);
-    if (!usuario || !usuario.oficina_id) throw new Error("Oficina ID not found for the current user.");
+    if (usuarioError) {
+        console.error("Error fetching from 'usuarios' table:", usuarioError);
+        throw new Error(`Could not fetch user profile. Is a user with email ${user.email} registered in the 'usuarios' table?`);
+    }
+    if (!usuario || !usuario.oficina_id) {
+        throw new Error("Oficina ID not found for the current user.");
+    }
 
     return usuario.oficina_id;
 }
