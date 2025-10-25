@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ClipboardList, Package, Users, TrendingUp } from "lucide-react";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -109,10 +108,6 @@ const Index = () => {
             <p className="text-muted-foreground">Nenhuma atividade</p>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="flex justify-end">
-        <MadeWithDyad />
       </div>
     </div>
   );
