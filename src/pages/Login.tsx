@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useSession } from "@/hooks/use-session";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { pt } from "@supabase/auth-ui-shared/dist/esm/locales/pt";
 import { BadgeCheck } from "lucide-react";
 import { Navigate, useLocation } from "react-router-dom";
 
@@ -36,6 +37,7 @@ const Login = () => {
           <Auth
             supabaseClient={supabase}
             providers={[]}
+            localization={{ variables: pt }}
             appearance={{
               theme: ThemeSupa,
               variables: {
