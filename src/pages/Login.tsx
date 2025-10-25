@@ -36,6 +36,40 @@ const Login = () => {
           <Auth
             supabaseClient={supabase}
             providers={[]}
+            localization={{
+              variables: {
+                sign_in: {
+                  email_label: "Endereço de e-mail",
+                  password_label: "Senha",
+                  email_input_placeholder: "seu@email.com",
+                  password_input_placeholder: "Sua senha",
+                  button_label: "Entrar",
+                  loading_button_label: "Entrando...",
+                  link_text: "Não tem uma conta? Cadastre-se",
+                },
+                sign_up: {
+                  email_label: "Endereço de e-mail",
+                  password_label: "Senha",
+                  email_input_placeholder: "seu@email.com",
+                  password_input_placeholder: "Crie uma senha",
+                  button_label: "Cadastrar",
+                  loading_button_label: "Cadastrando...",
+                  link_text: "Já tem uma conta? Entrar",
+                },
+                forgotten_password: {
+                  email_label: "Endereço de e-mail",
+                  password_label: "Senha",
+                  email_input_placeholder: "seu@email.com",
+                  button_label: "Enviar instruções",
+                  loading_button_label: "Enviando...",
+                  link_text: "Esqueceu sua senha?",
+                },
+                common: {
+                  password_mismatch: "As senhas não coincidem",
+                  empty_password: "A senha não pode estar vazia",
+                },
+              },
+            }}
             appearance={{
               theme: ThemeSupa,
               variables: {
