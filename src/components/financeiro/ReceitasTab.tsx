@@ -1,33 +1,50 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Settings } from "lucide-react";
 import { ReceitasTable } from "./ReceitasTable";
 import { ReceitaDialog } from "./ReceitaDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { GerenciadorCategorias } from "../configuracoes/GerenciadorCategorias";
 
 export const ReceitasTab = () => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [receitaDialogOpen, setReceitaDialogOpen] = useState(false);
+  const [categoriaDialogOpen, setCategoriaDialogOpen] = useState(false);
   const [selectedReceitaId, setSelectedReceitaId] = useState<string | null>(
     null,
   );
 
   const handleEdit = (id: string) => {
     setSelectedReceitaId(id);
-    setDialogOpen(true);
+    setReceitaDialogOpen(true);
   };
 
   const handleAddNew = () => {
     setSelectedReceitaId(null);
-    setDialogOpen(true);
+    setReceitaDialogOpen(true);
   };
 
   const handleDialogClose = () => {
-    setDialogOpen(false);
+    setReceitaDialogOpen(false);
     setSelectedReceitaId(null);
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => setCategoriaDialogOpen(true)}
+        >
+          <Settings className="h-4 w-4" />
+          Gerenciar Categorias
+        </Button>
         <Button className="gap-2" onClick={handleAddNew}>
           <PlusCircle className="h-4 w-4" />
           Nova Receita
@@ -35,11 +52,28 @@ export const ReceitasTab = () => {
       </div>
       <ReceitasTable onEdit={handleEdit} />
       <ReceitaDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={receitaDialogOpen}
+        onOpenChange={setReceitaDialogOpen}
         receitaId={selectedReceitaId}
         onFinished={handleDialogClose}
       />
+      <Dialog open={categoriaDialogOpen} onOpenChange={setCategoriaDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Categorias de Receita</DialogTitle>
+            <DialogDescription>
+              Adicione, edite ou remova categorias para organizar suas receitas.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <GerenciadorCategorias
+              tableName="categorias_receita"
+              queryKey="categorias_receita"
+              title="Categorias de Receita"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
