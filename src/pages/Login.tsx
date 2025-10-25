@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useSession } from "@/hooks/use-session";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { ptBR } from "@supabase/auth-ui-shared/dist/esm/locales/pt-BR";
+import { ptBR } from "@supabase/auth-ui-shared/locales/pt-BR";
 import { BadgeCheck } from "lucide-react";
 import { Navigate, useLocation } from "react-router-dom";
 
