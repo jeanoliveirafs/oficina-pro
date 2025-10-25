@@ -48,8 +48,10 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
         className={({ isActive }) =>
           cn(
             "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-            "hover:bg-primary/10 hover:text-primary",
-            isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+            "hover:bg-accent hover:text-accent-foreground",
+            isActive
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground",
           )
         }
         onClick={onNavigate}
@@ -68,37 +70,28 @@ export const AppLayout = () => {
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
-
     if (error) {
       showError("Não foi possível encerrar a sessão.");
       return;
     }
-
     showSuccess("Sessão encerrada com sucesso.");
     navigate("/login", { replace: true });
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900">
-      <aside className="hidden w-72 flex-col border-r bg-white p-6 lg:flex">
-        <div className="mb-8 flex items-center gap-3">
-          <BadgeCheck className="h-6 w-6 text-primary" />
-          <div>
-            <p className="text-lg font-semibold text-primary">
-              Oficina Pro
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Gestão completa
-            </p>
-          </div>
+    <div className="flex min-h-screen w-full bg-background">
+      <aside className="hidden w-64 flex-col border-r border-border/60 bg-card p-4 lg:flex">
+        <div className="mb-8 flex items-center gap-3 px-2">
+          <BadgeCheck className="h-7 w-7 text-primary" />
+          <p className="text-xl font-bold text-foreground">Oficina Pro</p>
         </div>
 
         <SidebarContent />
 
         <div className="mt-auto space-y-3 pt-6">
-          <div className="rounded-md border bg-slate-50 p-3">
+          <div className="rounded-lg border border-border/60 bg-background/50 p-3">
             <p className="text-xs text-muted-foreground">Usuário logado</p>
-            <p className="truncate text-sm font-medium">
+            <p className="truncate text-sm font-medium text-foreground">
               {user?.email ?? "Conta"}
             </p>
           </div>
@@ -114,7 +107,7 @@ export const AppLayout = () => {
       </aside>
 
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b bg-white px-4 py-3 shadow-sm lg:px-6">
+        <header className="flex h-16 items-center justify-between border-b border-border/60 bg-card px-4 lg:px-6">
           <div className="flex items-center gap-2">
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <SheetTrigger asChild>
@@ -122,58 +115,45 @@ export const AppLayout = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-0">
-                <SheetHeader className="px-6 py-4 text-left">
+              <SheetContent side="left" className="w-64 bg-card p-0">
+                <SheetHeader className="p-4 text-left">
                   <SheetTitle className="flex items-center gap-2">
-                    <BadgeCheck className="h-5 w-5 text-primary" />
-                    Oficina Pro
+                    <BadgeCheck className="h-6 w-6 text-primary" />
+                    <span className="text-lg font-bold">Oficina Pro</span>
                   </SheetTitle>
                 </SheetHeader>
-                <div className="px-6 pb-6">
+                <div className="p-4">
                   <SidebarContent onNavigate={() => setMobileNavOpen(false)} />
-                  <div className="mt-6 space-y-3">
-                    <div className="rounded-md border bg-slate-50 p-3">
-                      <p className="text-xs text-muted-foreground">Usuário logado</p>
-                      <p className="truncate text-sm font-medium">
-                        {user?.email ?? "Conta"}
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start gap-2"
-                      onClick={handleSignOut}
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sair
-                    </Button>
-                  </div>
                 </div>
               </SheetContent>
             </Sheet>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                SaaS Gestão de Oficinas
-              </p>
-              <h1 className="text-xl font-semibold text-slate-900">
-                Plataforma administrativa
-              </h1>
-            </div>
+            <h1 className="hidden text-xl font-semibold text-foreground md:block">
+              Dashboard
+            </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <Notifications />
-            <div className="hidden items-center gap-3 lg:flex">
-              <div className="rounded-md border bg-slate-50 px-3 py-2 text-sm">
-                {user?.email ?? "Conta"}
+            <div className="h-8 w-px bg-border" />
+            <div className="flex items-center gap-3">
+              <div className="hidden text-right lg:block">
+                <p className="text-sm font-medium text-foreground">
+                  {user?.email?.split("@")[0] ?? "Usuário"}
+                </p>
+                <p className="text-xs text-muted-foreground">Admin</p>
               </div>
-              <Button variant="outline" className="gap-2" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4" />
-                Sair
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-5 w-5" />
               </Button>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto bg-slate-50 p-4 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-8">
           <Outlet />
         </main>
       </div>
