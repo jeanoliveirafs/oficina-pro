@@ -136,8 +136,8 @@ export const AdicionarItemForm = ({ onAddItem }: AdicionarItemFormProps) => {
                           {p.nome}
                         </CommandItem>
                       ))}
-                    </CommandList>
-                  </Command>
+                    </CommandGroup>
+                  </CommandList>
                 </Command>
               </PopoverContent>
             </Popover>
