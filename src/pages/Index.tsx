@@ -2,8 +2,75 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ClipboardList, Package, Users, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabaseClient";
+import { startOfMonth, endOfMonth, format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const fetchDashboardData = async () => {
+  const now = new Date();
+  const start = format(startOfMonth(now), "yyyy-MM-dd");
+  const end = format(endOfMonth(now), "yyyy-MM-dd");
+
+  const faturamentoPromise = supabase
+    .from("vendas")
+    .select("valor_final")
+    .eq("status", "finalizada")
+    .gte("data_venda", start)
+    .lte("data_venda", end);
+
+  const orcamentosPromise = supabase
+    .from("orcamentos")
+    .select("id", { count: "exact" })
+    .eq("status", "pendente");
+
+  const alertasPromise = supabase
+    .from("alertas_estoque")
+    .select("id", { count: "exact" })
+    .eq("ativo", true);
+
+  const clientesPromise = supabase
+    .from("clientes")
+    .select("id", { count: "exact" })
+    .gte("created_at", start)
+    .lte("created_at", end);
+
+  const [
+    { data: faturamentoData, error: faturamentoError },
+    { count: orcamentosCount, error: orcamentosError },
+    { count: alertasCount, error: alertasError },
+    { count: clientesCount, error: clientesError },
+  ] = await Promise.all([
+    faturamentoPromise,
+    orcamentosPromise,
+    alertasPromise,
+    clientesPromise,
+  ]);
+
+  if (faturamentoError || orcamentosError || alertasError || clientesError) {
+    console.error({ faturamentoError, orcamentosError, alertasError, clientesError });
+    throw new Error("Erro ao buscar dados para o dashboard.");
+  }
+
+  const totalFaturamento = faturamentoData?.reduce((sum, v) => sum + v.valor_final, 0) ?? 0;
+
+  return {
+    totalFaturamento,
+    orcamentosAbertos: orcamentosCount ?? 0,
+    alertasEstoque: alertasCount ?? 0,
+    novosClientes: clientesCount ?? 0,
+  };
+};
 
 const Index = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard_summary"],
+    queryFn: fetchDashboardData,
+  });
+
+  const formatCurrency = (value?: number) =>
+    (value ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -32,14 +99,20 @@ const Index = () => {
         <Card className="border-border/60">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Faturamento Total
+              Faturamento (Mês)
             </CardTitle>
             <TrendingUp className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-foreground">R$ 0,00</p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-3/4" />
+            ) : (
+              <p className="text-3xl font-bold text-foreground">
+                {formatCurrency(data?.totalFaturamento)}
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">
-              +0% em relação ao mês passado
+              Total de vendas finalizadas
             </p>
           </CardContent>
         </Card>
@@ -51,7 +124,13 @@ const Index = () => {
             <ClipboardList className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-foreground">0</p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-1/4" />
+            ) : (
+              <p className="text-3xl font-bold text-foreground">
+                {data?.orcamentosAbertos}
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">
               Aguardando aprovação do cliente
             </p>
@@ -65,7 +144,13 @@ const Index = () => {
             <Package className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-foreground">0</p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-1/4" />
+            ) : (
+              <p className="text-3xl font-bold text-foreground">
+                {data?.alertasEstoque}
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">
               Produtos com estoque baixo
             </p>
@@ -74,14 +159,20 @@ const Index = () => {
         <Card className="border-border/60">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Novos Clientes
+              Novos Clientes (Mês)
             </CardTitle>
             <Users className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-foreground">0</p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-1/4" />
+            ) : (
+              <p className="text-3xl font-bold text-foreground">
+                {data?.novosClientes}
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">
-              +0% em relação ao mês passado
+              Clientes cadastrados este mês
             </p>
           </CardContent>
         </Card>
