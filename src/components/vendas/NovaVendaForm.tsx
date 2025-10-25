@@ -14,15 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useOficinaId } from "@/hooks/useOficinaId";
 import { supabase } from "@/lib/supabaseClient";
 import { showError, showLoading, showSuccess } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { DollarSign, Receipt, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AdicionarItemForm } from "./AdicionarItemForm";
 import { ClienteSelector } from "./ClienteSelector";
 import { ItensVendaTable } from "./ItensVendaTable";
-import { useOficinaId } from "@/hooks/useOficinaId";
 
 export interface ItemVenda {
   id: string;
@@ -41,10 +42,54 @@ export const NovaVendaForm = () => {
   const [formaPagamento, setFormaPagamento] = useState("dinheiro");
   const queryClient = useQueryClient();
   const { data: oficinaId, isLoading: isLoadingOficinaId } = useOficinaId();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const orcamentoId = location.state?.orcamentoId;
 
   useEffect(() => {
     setNumeroPedido(`VEN-${Date.now().toString().slice(-6)}`);
   }, []);
+
+  useEffect(() => {
+    const loadOrcamentoData = async () => {
+      if (!orcamentoId) return;
+
+      const toastId = showLoading("Carregando dados do orçamento...");
+
+      const { data: orcamentoData, error: orcamentoError } = await supabase
+        .from("orcamentos")
+        .select("cliente_id")
+        .eq("id", orcamentoId)
+        .single();
+
+      if (orcamentoError || !orcamentoData) {
+        showError("Erro ao buscar dados do orçamento.");
+        return;
+      }
+
+      const { data: itensData, error: itensError } = await supabase
+        .from("itens_orcamento")
+        .select("*")
+        .eq("orcamento_id", orcamentoId);
+
+      if (itensError) {
+        showError("Erro ao buscar itens do orçamento.");
+        return;
+      }
+
+      setClienteId(orcamentoData.cliente_id);
+      const newItens = itensData.map((item) => ({
+        ...item,
+        id: crypto.randomUUID(),
+      }));
+      setItens(newItens);
+
+      showSuccess("Orçamento carregado com sucesso!");
+      navigate(location.pathname, { replace: true, state: {} });
+    };
+
+    loadOrcamentoData();
+  }, [orcamentoId, navigate, location.pathname]);
 
   const total = useMemo(
     () => itens.reduce((acc, item) => acc + item.valor_total, 0),
@@ -111,6 +156,7 @@ export const NovaVendaForm = () => {
         forma_pagamento: formaPagamento,
         status: "finalizada",
         oficina_id: oficinaId,
+        orcamento_id: orcamentoId,
       })
       .select("id")
       .single();
@@ -136,8 +182,15 @@ export const NovaVendaForm = () => {
 
     if (itensError) {
       showError(`Erro ao salvar itens: ${itensError.message}`);
-      // Idealmente, aqui ocorreria um rollback da venda.
       return;
+    }
+
+    if (orcamentoId) {
+      await supabase
+        .from("orcamentos")
+        .update({ status: "aprovado" })
+        .eq("id", orcamentoId);
+      queryClient.invalidateQueries({ queryKey: ["orcamentos"] });
     }
 
     showSuccess("Venda finalizada com sucesso!");

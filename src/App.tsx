@@ -17,6 +17,7 @@ import Relatorios from "./pages/Relatorios";
 import Clientes from "./pages/Clientes";
 import Vendas from "./pages/Vendas";
 import NovoOrcamento from "./pages/NovoOrcamento";
+import EditarOrcamento from "./pages/EditarOrcamento";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/clientes" element={<Clientes />} />
               <Route path="/orcamentos" element={<Orcamentos />} />
               <Route path="/orcamentos/novo" element={<NovoOrcamento />} />
+              <Route path="/orcamentos/editar/:id" element={<EditarOrcamento />} />
               <Route path="/financeiro" element={<Financeiro />} />
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/configuracoes" element={<Configuracoes />} />

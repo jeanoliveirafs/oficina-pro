@@ -6,16 +6,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useOficinaId } from "@/hooks/useOficinaId";
 import { supabase } from "@/lib/supabaseClient";
 import { showError, showLoading, showSuccess } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Receipt, Save, Trash2 } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdicionarItemForm } from "../vendas/AdicionarItemForm";
 import { ClienteSelector } from "../vendas/ClienteSelector";
 import { ItensOrcamentoTable } from "./ItensOrcamentoTable";
-import { useOficinaId } from "@/hooks/useOficinaId";
 
 export interface ItemOrcamento {
   id: string;
@@ -27,17 +27,35 @@ export interface ItemOrcamento {
   valor_total: number;
 }
 
-export const NovoOrcamentoForm = () => {
-  const [clienteId, setClienteId] = useState<string | null>(null);
+interface NovoOrcamentoFormProps {
+  orcamentoInicial?: any;
+}
+
+export const NovoOrcamentoForm = ({
+  orcamentoInicial,
+}: NovoOrcamentoFormProps) => {
+  const isEditMode = !!orcamentoInicial;
+  const [clienteId, setClienteId] = useState<string | null>(
+    orcamentoInicial?.cliente_id ?? null,
+  );
   const [numeroOrcamento, setNumeroOrcamento] = useState("");
-  const [itens, setItens] = useState<ItemOrcamento[]>([]);
+  const [itens, setItens] = useState<ItemOrcamento[]>(
+    orcamentoInicial?.itens_orcamento?.map((item: any) => ({
+      ...item,
+      id: crypto.randomUUID(),
+    })) ?? [],
+  );
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: oficinaId, isLoading: isLoadingOficinaId } = useOficinaId();
 
   useEffect(() => {
-    setNumeroOrcamento(`ORC-${Date.now().toString().slice(-6)}`);
-  }, []);
+    if (isEditMode) {
+      setNumeroOrcamento(orcamentoInicial.numero);
+    } else {
+      setNumeroOrcamento(`ORC-${Date.now().toString().slice(-6)}`);
+    }
+  }, [isEditMode, orcamentoInicial]);
 
   const total = useMemo(
     () => itens.reduce((acc, item) => acc + item.valor_total, 0),
@@ -50,7 +68,10 @@ export const NovoOrcamentoForm = () => {
     showSuccess("Item adicionado com sucesso!");
   };
 
-  const handleUpdateItem = (itemId: string, updates: Partial<ItemOrcamento>) => {
+  const handleUpdateItem = (
+    itemId: string,
+    updates: Partial<ItemOrcamento>,
+  ) => {
     setItens((prev) =>
       prev.map((item) => {
         if (item.id === itemId) {
@@ -73,7 +94,9 @@ export const NovoOrcamentoForm = () => {
   const limparFormulario = () => {
     setClienteId(null);
     setItens([]);
-    setNumeroOrcamento(`ORC-${Date.now().toString().slice(-6)}`);
+    if (!isEditMode) {
+      setNumeroOrcamento(`ORC-${Date.now().toString().slice(-6)}`);
+    }
     queryClient.invalidateQueries({ queryKey: ["clientes"] });
   };
 
@@ -91,45 +114,78 @@ export const NovoOrcamentoForm = () => {
       return;
     }
 
-    const toastId = showLoading("Salvando orçamento...");
+    const toastId = showLoading(
+      isEditMode ? "Atualizando orçamento..." : "Salvando orçamento...",
+    );
 
-    const { data: orcamentoData, error: orcamentoError } = await supabase
-      .from("orcamentos")
-      .insert({
-        cliente_id: clienteId,
-        numero: numeroOrcamento,
-        valor_total: total,
-        status: "pendente",
-        oficina_id: oficinaId,
-      })
-      .select("id")
-      .single();
+    let orcamentoId = orcamentoInicial?.id;
+    let orcamentoError;
 
-    if (orcamentoError || !orcamentoData) {
-      showError(`Erro ao criar orçamento: ${orcamentoError?.message}`);
+    if (isEditMode) {
+      const { error } = await supabase
+        .from("orcamentos")
+        .update({
+          cliente_id: clienteId,
+          valor_total: total,
+        })
+        .eq("id", orcamentoId);
+      orcamentoError = error;
+    } else {
+      const { data, error } = await supabase
+        .from("orcamentos")
+        .insert({
+          cliente_id: clienteId,
+          numero: numeroOrcamento,
+          valor_total: total,
+          status: "pendente",
+          oficina_id: oficinaId,
+        })
+        .select("id")
+        .single();
+      if (data) orcamentoId = data.id;
+      orcamentoError = error;
+    }
+
+    if (orcamentoError || !orcamentoId) {
+      showError(`Erro ao salvar orçamento: ${orcamentoError?.message}`);
       return;
     }
 
-    const itensParaInserir = itens.map((item) => ({
-      orcamento_id: orcamentoData.id,
-      tipo: item.tipo,
-      produto_id: item.produto_id,
-      nome: item.nome,
-      quantidade: item.quantidade,
-      valor_unitario: item.valor_unitario,
-      valor_total: item.valor_total,
-    }));
-
-    const { error: itensError } = await supabase
-      .from("itens_orcamento")
-      .insert(itensParaInserir);
-
-    if (itensError) {
-      showError(`Erro ao salvar itens: ${itensError.message}`);
-      return;
+    if (isEditMode) {
+      const { error: deleteError } = await supabase
+        .from("itens_orcamento")
+        .delete()
+        .eq("orcamento_id", orcamentoId);
+      if (deleteError) {
+        showError(`Erro ao atualizar itens: ${deleteError.message}`);
+        return;
+      }
     }
 
-    showSuccess("Orçamento salvo com sucesso!");
+    if (itens.length > 0) {
+      const itensParaInserir = itens.map((item) => ({
+        orcamento_id: orcamentoId,
+        tipo: item.tipo,
+        produto_id: item.produto_id,
+        nome: item.nome,
+        quantidade: item.quantidade,
+        valor_unitario: item.valor_unitario,
+        valor_total: item.valor_total,
+      }));
+
+      const { error: itensError } = await supabase
+        .from("itens_orcamento")
+        .insert(itensParaInserir);
+
+      if (itensError) {
+        showError(`Erro ao salvar itens: ${itensError.message}`);
+        return;
+      }
+    }
+
+    showSuccess(
+      `Orçamento ${isEditMode ? "atualizado" : "salvo"} com sucesso!`,
+    );
     queryClient.invalidateQueries({ queryKey: ["orcamentos"] });
     navigate("/orcamentos");
   };
@@ -138,7 +194,9 @@ export const NovoOrcamentoForm = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Novo Orçamento</CardTitle>
+          <CardTitle>
+            {isEditMode ? "Editar Orçamento" : "Novo Orçamento"}
+          </CardTitle>
           <div className="flex flex-col justify-between gap-2 text-sm text-muted-foreground md:flex-row">
             <ClienteSelector
               selectedClienteId={clienteId}
@@ -189,7 +247,7 @@ export const NovoOrcamentoForm = () => {
               disabled={isLoadingOficinaId}
             >
               <Save className="h-4 w-4" />
-              Salvar Orçamento
+              {isEditMode ? "Atualizar Orçamento" : "Salvar Orçamento"}
             </Button>
           </div>
         </CardFooter>
