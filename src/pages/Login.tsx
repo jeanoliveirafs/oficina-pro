@@ -2,8 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabaseClient";
 import { useSession } from "@/hooks/use-session";
 import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { pt } from "@supabase/auth-ui-shared/dist/esm/locales/pt";
+import { ThemeSupa, pt } from "@supabase/auth-ui-shared";
 import { BadgeCheck } from "lucide-react";
 import { Navigate, useLocation } from "react-router-dom";
 
