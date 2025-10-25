@@ -7,16 +7,20 @@ const corsHeaders = {
 }
 
 async function getOficinaId(supabase: SupabaseClient): Promise<string> {
-    const { data: oficina, error: oficinaError } = await supabase
-        .from('oficinas')
-        .select('id')
-        .limit(1)
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    if (!user) throw new Error("User not authenticated");
+
+    const { data: usuario, error: usuarioError } = await supabase
+        .from('usuarios')
+        .select('oficina_id')
+        .eq('id', user.id)
         .single();
 
-    if (oficinaError) throw new Error(`Could not fetch oficina: ${oficinaError.message}`);
-    if (!oficina) throw new Error("Oficina not found");
+    if (usuarioError) throw new Error(`Could not fetch user profile: ${usuarioError.message}`);
+    if (!usuario || !usuario.oficina_id) throw new Error("Oficina ID not found for the current user.");
 
-    return oficina.id;
+    return usuario.oficina_id;
 }
 
 serve(async (req) => {
