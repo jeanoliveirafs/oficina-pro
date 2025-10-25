@@ -22,6 +22,7 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { showError, showSuccess } from "@/utils/toast";
+import { useOficinaId } from "@/hooks/useOficinaId";
 
 const produtoSchema = z.object({
   codigo: z.string().min(1, "O código é obrigatório."),
@@ -51,6 +52,7 @@ export const ProdutoForm = ({
 }: ProdutoFormProps) => {
   const queryClient = useQueryClient();
   const isEditMode = !!produtoInicial;
+  const { data: oficinaId, isLoading: isLoadingOficinaId } = useOficinaId();
 
   const form = useForm<ProdutoFormValues>({
     resolver: zodResolver(produtoSchema),
@@ -78,9 +80,14 @@ export const ProdutoForm = ({
   });
 
   const onSubmit = async (values: ProdutoFormValues) => {
+    if (!oficinaId) {
+      showError("ID da oficina não encontrado. Não é possível salvar.");
+      return;
+    }
+
     const dataToUpsert = {
       ...values,
-      oficina_id: "a22a15c0-42a6-407a-938b-235595552217", // ID Fixo para demonstração
+      oficina_id: oficinaId,
     };
 
     let error;
@@ -229,7 +236,9 @@ export const ProdutoForm = ({
           <Button type="button" variant="outline" onClick={onFinished}>
             Cancelar
           </Button>
-          <Button type="submit">Salvar</Button>
+          <Button type="submit" disabled={isLoadingOficinaId}>
+            Salvar
+          </Button>
         </div>
       </form>
     </Form>

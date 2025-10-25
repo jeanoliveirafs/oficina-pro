@@ -22,6 +22,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AdicionarItemForm } from "./AdicionarItemForm";
 import { ClienteSelector } from "./ClienteSelector";
 import { ItensVendaTable } from "./ItensVendaTable";
+import { useOficinaId } from "@/hooks/useOficinaId";
 
 export interface ItemVenda {
   id: string;
@@ -39,6 +40,7 @@ export const NovaVendaForm = () => {
   const [itens, setItens] = useState<ItemVenda[]>([]);
   const [formaPagamento, setFormaPagamento] = useState("dinheiro");
   const queryClient = useQueryClient();
+  const { data: oficinaId, isLoading: isLoadingOficinaId } = useOficinaId();
 
   useEffect(() => {
     setNumeroPedido(`VEN-${Date.now().toString().slice(-6)}`);
@@ -92,6 +94,10 @@ export const NovaVendaForm = () => {
       showError("Adicione pelo menos um item à venda.");
       return;
     }
+    if (!oficinaId) {
+      showError("ID da oficina não encontrado. Não é possível salvar.");
+      return;
+    }
 
     const toastId = showLoading("Finalizando venda...");
 
@@ -104,7 +110,7 @@ export const NovaVendaForm = () => {
         valor_final: total,
         forma_pagamento: formaPagamento,
         status: "finalizada",
-        oficina_id: "a22a15c0-42a6-407a-938b-235595552217", // ID Fixo para demonstração
+        oficina_id: oficinaId,
       })
       .select("id")
       .single();
@@ -209,7 +215,11 @@ export const NovaVendaForm = () => {
               <Button variant="secondary" className="gap-2" disabled>
                 <Receipt className="h-4 w-4" /> Salvar Orçamento
               </Button>
-              <Button className="gap-2" onClick={handleFinalizarVenda}>
+              <Button
+                className="gap-2"
+                onClick={handleFinalizarVenda}
+                disabled={isLoadingOficinaId}
+              >
                 Finalizar Venda
               </Button>
             </div>

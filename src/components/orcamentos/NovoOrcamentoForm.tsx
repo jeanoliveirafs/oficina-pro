@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { AdicionarItemForm } from "../vendas/AdicionarItemForm";
 import { ClienteSelector } from "../vendas/ClienteSelector";
 import { ItensOrcamentoTable } from "./ItensOrcamentoTable";
+import { useOficinaId } from "@/hooks/useOficinaId";
 
 export interface ItemOrcamento {
   id: string;
@@ -32,6 +33,7 @@ export const NovoOrcamentoForm = () => {
   const [itens, setItens] = useState<ItemOrcamento[]>([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { data: oficinaId, isLoading: isLoadingOficinaId } = useOficinaId();
 
   useEffect(() => {
     setNumeroOrcamento(`ORC-${Date.now().toString().slice(-6)}`);
@@ -84,6 +86,10 @@ export const NovoOrcamentoForm = () => {
       showError("Adicione pelo menos um item ao orçamento.");
       return;
     }
+    if (!oficinaId) {
+      showError("ID da oficina não encontrado. Não é possível salvar.");
+      return;
+    }
 
     const toastId = showLoading("Salvando orçamento...");
 
@@ -94,7 +100,7 @@ export const NovoOrcamentoForm = () => {
         numero: numeroOrcamento,
         valor_total: total,
         status: "pendente",
-        oficina_id: "a22a15c0-42a6-407a-938b-235595552217", // ID Fixo para demonstração
+        oficina_id: oficinaId,
       })
       .select("id")
       .single();
@@ -177,7 +183,11 @@ export const NovoOrcamentoForm = () => {
             >
               <Trash2 className="h-4 w-4" /> Limpar
             </Button>
-            <Button className="gap-2" onClick={handleSalvarOrcamento}>
+            <Button
+              className="gap-2"
+              onClick={handleSalvarOrcamento}
+              disabled={isLoadingOficinaId}
+            >
               <Save className="h-4 w-4" />
               Salvar Orçamento
             </Button>
