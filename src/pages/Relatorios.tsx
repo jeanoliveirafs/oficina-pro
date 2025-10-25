@@ -1,12 +1,8 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, PieChart, TrendingUp } from "lucide-react";
+import { RelatorioProdutosVendidos } from "@/components/relatorios/RelatorioProdutosVendidos";
+import { RelatorioClientesFaturamento } from "@/components/relatorios/RelatorioClientesFaturamento";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp } from "lucide-react";
 
 const Relatorios = () => {
   return (
@@ -18,7 +14,7 @@ const Relatorios = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="geral" className="space-y-4">
+      <Tabs defaultValue="produtos" className="space-y-4">
         <TabsList>
           <TabsTrigger value="geral">Visão geral</TabsTrigger>
           <TabsTrigger value="produtos">Produtos</TabsTrigger>
@@ -43,40 +39,10 @@ const Relatorios = () => {
           </Card>
         </TabsContent>
         <TabsContent value="produtos">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-semibold">
-                  Produtos mais vendidos
-                </CardTitle>
-                <CardDescription>
-                  Descubra os itens que geram mais receita e ajuste seu estoque.
-                </CardDescription>
-              </div>
-              <BarChart3 className="h-6 w-6 text-primary" />
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Em breve: ranking de venda, margem por categoria e sazonalidade.
-            </CardContent>
-          </Card>
+          <RelatorioProdutosVendidos />
         </TabsContent>
         <TabsContent value="clientes">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-semibold">
-                  Fidelização de clientes
-                </CardTitle>
-                <CardDescription>
-                  Avalie quem mais compra, ticket médio e histórico de serviços.
-                </CardDescription>
-              </div>
-              <PieChart className="h-6 w-6 text-primary" />
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Em breve: cohort de clientes, alertas de inatividade e exportação completa.
-            </CardContent>
-          </Card>
+          <RelatorioClientesFaturamento />
         </TabsContent>
       </Tabs>
     </div>
