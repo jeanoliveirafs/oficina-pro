@@ -53,38 +53,70 @@ export const ClienteForm = ({
   const onSubmit = async (values: ClienteFormValues) => {
     const oficinaId = "a22a15c0-42a6-407a-938b-235595552217"; // ID Fixo
 
-    // Upsert cliente
-    const { data: clienteData, error: clienteError } = await supabase
-      .from("clientes")
-      .upsert({
-        id: clienteInicial?.id,
-        nome: values.nome,
-        telefone: values.telefone,
-        oficina_id: oficinaId,
-      })
-      .select("id")
-      .single();
+    // 1. Salvar dados do cliente
+    let clienteId = clienteInicial?.id;
+    let clienteError;
 
-    if (clienteError || !clienteData) {
+    if (isEditMode) {
+      const { error } = await supabase
+        .from("clientes")
+        .update({ nome: values.nome, telefone: values.telefone })
+        .eq("id", clienteId);
+      clienteError = error;
+    } else {
+      const { data, error } = await supabase
+        .from("clientes")
+        .insert({
+          nome: values.nome,
+          telefone: values.telefone,
+          oficina_id: oficinaId,
+        })
+        .select("id")
+        .single();
+      if (data) clienteId = data.id;
+      clienteError = error;
+    }
+
+    if (clienteError || !clienteId) {
       showError(`Erro ao salvar cliente: ${clienteError?.message}`);
       return;
     }
 
-    // Upsert veículo
-    if (values.marca || values.modelo || values.placa) {
-      const { error: veiculoError } = await supabase.from("veiculos").upsert({
-        id: veiculoInicial?.id,
-        cliente_id: clienteData.id,
+    // 2. Salvar dados do veículo
+    const hasVehicleData = values.marca || values.modelo || values.placa;
+    let veiculoError;
+
+    if (hasVehicleData) {
+      const veiculoPayload = {
+        cliente_id: clienteId,
         marca: values.marca,
         modelo: values.modelo,
         placa: values.placa,
         oficina_id: oficinaId,
-      });
-
-      if (veiculoError) {
-        showError(`Erro ao salvar veículo: ${veiculoError.message}`);
-        return;
+      };
+      if (veiculoInicial?.id) {
+        const { error } = await supabase
+          .from("veiculos")
+          .update(veiculoPayload)
+          .eq("id", veiculoInicial.id);
+        veiculoError = error;
+      } else {
+        const { error } = await supabase
+          .from("veiculos")
+          .insert(veiculoPayload);
+        veiculoError = error;
       }
+    } else if (veiculoInicial?.id) {
+      const { error } = await supabase
+        .from("veiculos")
+        .delete()
+        .eq("id", veiculoInicial.id);
+      veiculoError = error;
+    }
+
+    if (veiculoError) {
+      showError(`Erro ao salvar veículo: ${veiculoError.message}`);
+      return;
     }
 
     showSuccess(
